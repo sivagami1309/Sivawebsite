@@ -1,0 +1,133 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Start SIVA MART backend",
+			"type": "shell",
+			"command": "npm --prefix \".\\Sivagami app\" start",
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start SIVA MART backend correctly",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"start"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start updated SIVA MART on port 8081",
+			"type": "shell",
+			"command": "cmd.exe",
+			"args": [
+				"/d",
+				"/s",
+				"/c",
+				"set PORT=8081 && npm --prefix \"Sivagami app\" start"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run updated SIVA MART backend port 8081",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"process.chdir('Sivagami app'); process.env.PORT='8081'; require('./backend/server.js')"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Restart SIVA MART backend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"start"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Start updated SIVA MART backend on 8081",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"-e",
+				"process.chdir(String.fromCharCode(83,105,118,97,103,97,109,105,32,97,112,112));process.env.PORT=8081;require(String.fromCharCode(46,47,98,97,99,107,101,110,100,47,115,101,114,118,101,114,46,106,115))"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run updated backend at 8081",
+			"type": "shell",
+			"command": "node",
+			"args": [
+				"start-updated-backend.js"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run fixed SIVA MART backend 8082",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"run",
+				"start:8082"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run commerce-fixed backend port 8083",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"run",
+				"start:8083"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run cart and seller fixed backend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"run",
+				"start:8084"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		},
+		{
+			"label": "Run seller-store-name backend",
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"--prefix",
+				"Sivagami app",
+				"run",
+				"start:8085"
+			],
+			"isBackground": true,
+			"problemMatcher": []
+		}
+	]
+}
