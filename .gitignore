@@ -16,3 +16,5 @@ backend/build-ninja/
 .vercel
 .env*
 .neon
+# Old copy of this project with its own git repo
+Sivagami app/
