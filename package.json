@@ -1,20 +1,15 @@
 {
-  "name": "siva-mart-login",
+  "name": "siva-mart",
   "version": "1.0.0",
   "private": true,
-  "main": "backend/server.js",
+  "engines": {
+    "node": ">=18.11"
+  },
   "scripts": {
+    "dev": "node --watch backend/server.js",
+    "build": "node backend/check-code.js",
     "start": "node backend/server.js",
-    "start:backend": "node backend/server.js",
-    "start:backend:local": "set \"USE_LOCAL_PG=true\" && node backend/server.js",
-    "start:frontend": "node backend/dev-frontend.js",
-    "start:8081": "node backend/start-8081.js",
-    "start:8082": "node backend/start-8082.js",
-    "start:8083": "node backend/start-8083.js",
-    "start:8084": "node backend/start-8084.js",
-    "start:8085": "node backend/start-8085.js",
-    "build:native": "cmake -G \"MinGW Makefiles\" -S backend -B backend/build && cmake --build backend/build --config Release",
-    "start:native": "backend\\build\\Release\\siva_mart.exe"
+    "create-admin": "node backend/create-admin.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
