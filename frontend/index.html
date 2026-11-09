@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f0e8">
-    <title>Sign in | SIVA MART</title>
+  <title>SIVA MART | Everyday goods, thoughtfully gathered</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -93,18 +93,19 @@
 
   <section id="buyer-app" class="commerce-app hidden-form">
     <header class="topbar">
-      <div>
+      <div class="store-brand">
         <p class="eyebrow accent-text">SIVA_MART</p>
-        <h3>Buyer home</h3>
+        <h3>Shop</h3>
       </div>
-      <button type="button" id="buyer-logout" class="secondary-button">Logout</button>
+      <label class="store-search" for="buyer-search"><span>Search</span><input id="buyer-search" type="search" placeholder="Search SIVA MART" /></label>
+      <div class="store-actions"><button type="button" class="secondary-button" data-view="wishlist">Wishlist <span id="wishlist-count">0</span></button><button type="button" class="secondary-button" id="buyer-logout">Logout</button></div>
     </header>
 
     <div class="shop-layout">
       <aside class="shop-sidebar">
         <div class="sidebar-block">
           <h4>Browse</h4>
-          <input id="buyer-search" type="search" placeholder="Search products" />
+          <p class="shop-intro">Discover products from SIVA MART sellers.</p>
         </div>
 
         <div class="sidebar-block">
@@ -124,7 +125,7 @@
         <div class="stats-row">
           <div class="stat-card"><span>Products</span><strong id="product-count">0</strong></div>
           <div class="stat-card"><span>Cart</span><strong id="cart-count">0</strong></div>
-          <div class="stat-card"><span>Wishlist</span><strong id="wishlist-count">0</strong></div>
+          <div class="stat-card"><span>Wishlist</span><strong id="wishlist-count-summary">0</strong></div>
         </div>
 
         <div class="catalog-panel">
@@ -143,7 +144,7 @@
             <div><span>Items</span><strong id="cart-total-items">0</strong></div>
             <div><span>Subtotal</span><strong id="cart-subtotal">₹0.00</strong></div>
           </div>
-          <button type="button" id="checkout-button" class="submit-button">Proceed to Checkout</button>
+          <button type="button" id="checkout-button" class="submit-button">Buy Now</button>
           <button type="button" id="clear-cart" class="secondary-button full-width">Clear Cart</button>
         </div>
 
@@ -152,11 +153,72 @@
           <div id="wishlist-items" class="mini-list"></div>
         </div>
 
-        <div class="cart-card">
-          <h4>My Orders</h4>
-          <div id="order-history" class="mini-list"></div>
-        </div>
       </aside>
+    </div>
+    <section class="catalog-panel order-history-panel">
+      <div class="panel-header"><div><h4>My Orders</h4><p class="product-meta">Track delivery, view order details, and review purchases.</p></div></div>
+      <div id="order-history" class="order-list"></div>
+    </section>
+  </section>
+
+  <section id="product-detail-modal" class="commerce-modal hidden-form" role="dialog" aria-modal="true" aria-labelledby="product-detail-title">
+    <div class="commerce-dialog product-detail-dialog">
+      <button type="button" class="modal-close" data-close-modal aria-label="Close product details">×</button>
+      <div id="product-detail-content"></div>
+    </div>
+  </section>
+
+  <section id="checkout-modal" class="commerce-modal hidden-form" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+    <div class="commerce-dialog checkout-dialog">
+      <button type="button" class="modal-close" data-close-modal aria-label="Close order summary">×</button>
+      <h2 id="checkout-title">Order summary</h2>
+      <p class="checkout-subtitle">Review your items and delivery address, then confirm your order. You pay when it arrives.</p>
+      <form id="checkout-form">
+        <div class="checkout-summary">
+          <h3>Order summary</h3><div id="checkout-items"></div>
+          <div><span>Items subtotal</span><strong id="checkout-subtotal">₹0.00</strong></div>
+          <div><span>Discount</span><strong id="checkout-discount">−₹0.00</strong></div>
+          <div><span>Delivery</span><strong id="checkout-delivery">Free</strong></div>
+          <div><span>Payment method</span><strong id="checkout-payment-method">Cash on Delivery</strong></div>
+          <div class="checkout-total"><span>Total to pay on delivery</span><strong id="checkout-total">₹0.00</strong></div>
+        </div>
+        <label for="checkout-saved-address">Saved delivery address</label>
+        <select id="checkout-saved-address"><option value="">Enter a new address</option></select>
+        <div id="checkout-address-fields" class="checkout-address-fields">
+          <label for="checkout-recipient">Full name</label><input id="checkout-recipient" type="text" autocomplete="name" required />
+          <label for="checkout-phone">Phone</label><input id="checkout-phone" type="tel" autocomplete="tel" required />
+          <label for="checkout-line1">Address</label><input id="checkout-line1" type="text" autocomplete="address-line1" required />
+          <label for="checkout-line2">Apartment, suite, etc. (optional)</label><input id="checkout-line2" type="text" autocomplete="address-line2" />
+          <div class="checkout-address-row">
+            <label>City<input id="checkout-city" type="text" autocomplete="address-level2" required /></label>
+            <label>State<input id="checkout-state" type="text" autocomplete="address-level1" required /></label>
+          </div>
+          <label for="checkout-postal">Postal code</label><input id="checkout-postal" type="text" autocomplete="postal-code" required />
+        </div>
+        <p id="checkout-message" class="form-message" role="status" aria-live="polite"></p>
+        <button id="place-order-button" type="submit" class="submit-button">Confirm Order</button>
+      </form>
+      <div id="checkout-success" class="checkout-success hidden-form" role="status">
+        <div class="success-checkmark" aria-hidden="true">✓</div>
+        <h3>Order Placed Successfully</h3>
+        <p id="checkout-success-order"></p>
+        <p class="checkout-success-message">You can track your order from My Orders.</p>
+        <button id="checkout-success-orders" type="button" class="submit-button">View My Orders</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="review-modal" class="commerce-modal hidden-form" role="dialog" aria-modal="true" aria-labelledby="review-title">
+    <div class="commerce-dialog review-dialog">
+      <button type="button" class="modal-close" data-close-modal aria-label="Close review form">×</button>
+      <h2 id="review-title">Write a review</h2>
+      <form id="review-form">
+        <label for="review-purchase">Verified purchase</label><select id="review-purchase" required></select>
+        <label for="review-rating">Rating</label><select id="review-rating" required><option value="5">5 stars</option><option value="4">4 stars</option><option value="3">3 stars</option><option value="2">2 stars</option><option value="1">1 star</option></select>
+        <label for="review-text">Your review</label><textarea id="review-text" rows="5" maxlength="4000" required></textarea>
+        <p id="review-message" class="form-message" role="status" aria-live="polite"></p>
+        <button type="submit" class="submit-button">Submit review</button>
+      </form>
     </div>
   </section>
 
@@ -178,10 +240,16 @@
           <label>Product Name<input id="product-name" type="text" required /></label>
           <label>Category<input id="product-category" type="text" placeholder="Electronics" /></label>
           <label>Description<textarea id="product-description" rows="3" placeholder="Short product description"></textarea></label>
-          <label>Price<input id="product-price" type="number" min="0" step="0.01" required /></label>
+          <label>Selling price<input id="product-price" type="number" min="0.01" step="0.01" required /></label>
+          <label>MRP<input id="product-mrp" type="number" min="0.01" step="0.01" required /></label>
           <label>Stock<input id="product-stock" type="number" min="0" step="1" required /></label>
           <label>Image URL<input id="product-image" type="url" placeholder="https://..." /></label>
+          <label>More product images<input id="product-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple /></label>
           <label>Brand<input id="product-brand" type="text" placeholder="Brand name" /></label>
+          <label>Specifications (JSON)<textarea id="product-specifications" rows="3" placeholder='{"Material":"Cotton"}'></textarea></label>
+          <label>Offer details<input id="product-offer" type="text" maxlength="500" /></label>
+          <label>Coupon code<input id="product-coupon" type="text" maxlength="60" /></label>
+          <label>Return policy<input id="product-return-policy" type="text" maxlength="500" /></label>
           <button type="submit" class="submit-button">Save Product</button>
           <button type="button" id="cancel-edit" class="secondary-button full-width">Cancel Edit</button>
         </form>
@@ -227,6 +295,7 @@
           <button type="button" class="admin-nav-btn" data-admin-view="users">Users</button>
           <button type="button" class="admin-nav-btn" data-admin-view="products">Products</button>
           <button type="button" class="admin-nav-btn" data-admin-view="orders">Orders</button>
+          <button type="button" class="admin-nav-btn" data-admin-view="reviews">Reviews</button>
         </nav>
 
         <button type="button" id="admin-logout" class="submit-button admin-logout-btn">Logout</button>
@@ -263,8 +332,36 @@
               <strong id="admin-total-orders">0</strong>
             </article>
             <article class="admin-stat-card">
+              <span>New Orders</span>
+              <strong id="admin-new-orders">0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Processing</span>
+              <strong id="admin-orders-processing">0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Orders On the Way</span>
+              <strong id="admin-orders-on-the-way">0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Awaiting Customer Confirmation</span>
+              <strong id="admin-awaiting-confirmation">0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Completed Orders</span>
+              <strong id="admin-completed-orders">0</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Cancelled Orders</span>
+              <strong id="admin-cancelled-orders">0</strong>
+            </article>
+            <article class="admin-stat-card">
               <span>Total Order Value</span>
               <strong id="admin-total-order-value">₹0.00</strong>
+            </article>
+            <article class="admin-stat-card">
+              <span>Order Revenue</span>
+              <strong id="admin-total-revenue">₹0.00</strong>
             </article>
           </div>
         </section>
@@ -307,8 +404,30 @@
               <p class="eyebrow accent-text">Catalog</p>
               <h4>Products</h4>
             </div>
-            <button type="button" id="admin-refresh-products" class="secondary-button">Refresh</button>
+            <div class="admin-panel-actions"><button type="button" id="admin-add-product" class="secondary-button">Add product</button><button type="button" id="admin-refresh-products" class="secondary-button">Refresh</button></div>
           </div>
+          <form id="admin-product-form" class="seller-form admin-product-form hidden-form">
+            <input id="admin-product-id" type="hidden" />
+            <label>Seller<select id="admin-product-seller" required></select></label>
+            <label>Product name<input id="admin-product-name" type="text" required /></label>
+            <label>Category<input id="admin-product-category" type="text" /></label>
+            <label>Brand<input id="admin-product-brand" type="text" /></label>
+            <label>Description<textarea id="admin-product-description" rows="3"></textarea></label>
+            <div class="checkout-address-row">
+              <label>Selling price<input id="admin-product-price" type="number" min="0.01" step="0.01" required /></label>
+              <label>MRP<input id="admin-product-mrp" type="number" min="0.01" step="0.01" required /></label>
+              <label>Exact stock<input id="admin-product-stock" type="number" min="0" step="1" required /></label>
+            </div>
+            <label>Primary image URL<input id="admin-product-image" type="url" /></label>
+            <label>Additional images<input id="admin-product-images" type="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple /></label>
+            <label>Specifications (JSON)<textarea id="admin-product-specifications" rows="3">{}</textarea></label>
+            <label>Offer details<input id="admin-product-offer" type="text" maxlength="500" /></label>
+            <label>Coupon code<input id="admin-product-coupon" type="text" maxlength="60" /></label>
+            <label>Return policy<input id="admin-product-return-policy" type="text" maxlength="500" /></label>
+            <label class="admin-availability"><input id="admin-product-available" type="checkbox" checked /> Product available for sale</label>
+            <div class="admin-panel-actions"><button type="submit" class="submit-button">Save product</button><button type="button" id="admin-cancel-product" class="secondary-button">Cancel</button></div>
+            <p id="admin-product-message" class="form-message" role="status"></p>
+          </form>
           <div class="admin-toolbar">
             <input id="admin-product-search" type="search" placeholder="Search products" />
             <select id="admin-product-category-filter">
@@ -322,6 +441,7 @@
                   <th>ID</th>
                   <th>Name</th>
                   <th>Price</th>
+                  <th>MRP</th>
                   <th>Stock</th>
                   <th>Category</th>
                   <th>Seller</th>
@@ -333,6 +453,16 @@
           </div>
         </section>
 
+        <section id="admin-reviews" class="admin-section hidden-form">
+          <div class="admin-panel-header"><div><p class="eyebrow accent-text">Moderation</p><h4>Customer reviews</h4></div>
+            <select id="admin-review-filter"><option value="pending">Pending</option><option value="approved">Approved</option><option value="rejected">Rejected</option><option value="all">All reviews</option></select>
+          </div>
+          <div class="admin-table-wrap"><table class="admin-table">
+            <thead><tr><th>Product</th><th>Customer</th><th>Rating</th><th>Review</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="admin-reviews-body"></tbody>
+          </table></div>
+        </section>
+
         <section id="admin-orders" class="admin-section hidden-form">
           <div class="admin-panel-header">
             <div>
@@ -340,12 +470,19 @@
               <h4>Orders</h4>
             </div>
           </div>
+          <div class="new-orders-section">
+            <div class="panel-header"><div><h4>New Orders</h4><p class="product-meta">Confirmed orders waiting to be sent out.</p></div><strong id="admin-new-orders-count" class="admin-order-count">0</strong></div>
+            <div id="admin-new-orders-list" class="order-list"></div>
+          </div>
           <div class="admin-toolbar">
             <input id="admin-order-search" type="search" placeholder="Search orders or buyer" />
             <select id="admin-order-status-filter">
               <option value="all">All statuses</option>
-              <option value="confirmed">Confirmed</option>
+              <option value="confirmed">Order Confirmed</option>
               <option value="processing">Processing</option>
+              <option value="on_the_way">On The Way</option>
+              <option value="received">Received</option>
+              <option value="completed">Order Completed</option>
               <option value="shipped">Shipped</option>
               <option value="delivered">Delivered</option>
               <option value="cancelled">Cancelled</option>
@@ -357,10 +494,12 @@
                 <tr>
                   <th>Order ID</th>
                   <th>Buyer</th>
+                  <th>Delivery address</th>
+                  <th>Products</th>
                   <th>Status</th>
-                  <th>Total</th>
-                  <th>Items</th>
+                  <th>Total / payment</th>
                   <th>Placed</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody id="admin-orders-body"></tbody>

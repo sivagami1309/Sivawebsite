@@ -1,85 +1,76 @@
 # SIVA MART
 
-## Project structure
+SIVA MART keeps its existing Express, vanilla JavaScript, and PostgreSQL stack. The Node backend serves the application directly; `backend/dev-frontend.js` is an optional local frontend server that proxies `/api` requests to it.
 
-- `frontend/` contains the browser application: HTML, CSS, and client-side JavaScript.
-- `backend/` contains the Drogon C++ API migration and the existing Express compatibility server.
-- `database/` contains database documentation and is the home for database migrations or SQL scripts.
-- `.env` contains local PostgreSQL connection settings.
+## Requirements and environment
 
-The existing Buyer/Seller/Admin shopping login page connects to the PostgreSQL `users` table in the `siva_mart` database. Users can create their own account from the frontend.
+- Node.js 18 or newer and npm.
+- PostgreSQL with the existing `siva_mart` database and `users` table. Passwords must be bcrypt hashes.
 
-## Node compatibility server
+Copy `.env.example` to `.env` and set your PostgreSQL connection. Use either `DATABASE_URL` or `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`. Keep `.env` out of Git.
 
-```powershell
-npm install express pg bcryptjs cors dotenv
-```
-
-Create a `.env` file in this folder:
+Set this additional variable:
 
 ```env
-PORT=8080
-PGHOST=localhost
-PGPORT=5432
-PGDATABASE=siva_mart
-PGUSER=postgres
-PGPASSWORD=your_postgres_password
+AUTH_TOKEN_SECRET=<at-least-32-random-bytes>
 ```
 
-The existing table must contain `id`, `full_name`, `email`, `role`, and `password_hash`. Passwords must be bcrypt hashes, never plain text.
+Generate a signing secret locally with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`. Never use the sample value in `.env.example` in production. In production, `AUTH_TOKEN_SECRET` is required; changing it invalidates existing sessions.
 
-## Drogon backend
+## Run locally (two terminals)
 
-The native backend is defined in `backend/CMakeLists.txt` and `backend/main.cpp`. Install Drogon with PostgreSQL support, then build it with:
+From `C:\Users\SIVAGAMI S\sivagami app 1\Sivagami app`:
+
+**Terminal 1 — backend**
 
 ```powershell
-# From a vcpkg installation:
-vcpkg install drogon[postgresql]:x64-windows
-npm run build:native
-npm run start:native
+Set-Location 'C:\Users\SIVAGAMI S\sivagami app 1\Sivagami app'
+npm run start:backend:local
 ```
 
-The Drogon server currently serves the frontend and provides `/api/health`. The remaining commerce routes still run through the compatibility server until each route is migrated to C++.
+`start:backend:local` uses the existing `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD` values in `.env`, without changing them. This is useful when `.env` also contains a `DATABASE_URL` for a remote database. Use `npm run start:backend` when `DATABASE_URL` is the intended and reachable database.
 
-## Run
+**Terminal 2 — frontend**
 
 ```powershell
-npm start
+Set-Location 'C:\Users\SIVAGAMI S\sivagami app 1\Sivagami app'
+npm run start:frontend
 ```
 
-Open http://localhost:8080. The backend serves the files from `frontend/` and exposes the API under `/api`. Test the database connection at http://localhost:8080/api/health.
+Open the frontend at http://localhost:5173. It proxies API calls to the backend at http://localhost:8080. The backend also serves the full app at http://localhost:8080. Check PostgreSQL connectivity at http://localhost:8080/api/health.
 
-If an older server is still occupying port 8080, run `npm run start:8081` and open http://localhost:8081 instead. If that port is also occupied by an older server, use the matching available server script (`start:8082` through `start:8085`) and open the matching localhost port.
+The backend runs additive PostgreSQL schema setup on startup, protected by a PostgreSQL advisory lock. It creates product images, moderated verified-purchase reviews, delivery addresses, and inventory movements without dropping existing customer or product tables. Take a database backup before the first upgraded startup. If startup reports a database connection error, correct the local connection variables and verify `/api/health` before retrying; migrations do not run while PostgreSQL is unreachable.
 
-## Deploy to Vercel
+## Shopping and orders
 
-Set the Vercel project's Root Directory to the repository root containing `vercel.json`, `package.json`, `backend/`, and `frontend/`. The Vercel Node function exports the Express app, while `vercel.json` routes requests to it and bundles the frontend files it serves.
+- Product details, availability, ratings, and reviews use live PostgreSQL data. New reviews are pending until an administrator approves them.
+- Product image uploads are stored in PostgreSQL (up to 8 JPEG, PNG, WebP, or GIF images per product, 512 KiB per image).
+- Buyers see only `In Stock`, `Out of Stock`, or `Currently Unavailable`. Exact stock and reserved quantities remain in seller/admin tools.
+- SIVA MART does not take online payments, and no payment gateway credentials are needed. Every order is Cash on Delivery: it gets a `payments` row with method `Cash on Delivery` and status `pending`, and nothing marks money as received.
+- A buyer adds products to the cart, clicks **Buy Now**, reviews the order summary and delivery address, and clicks **Confirm Order**. The backend recalculates prices, checks and reduces stock, creates the order as `confirmed` (shown as "Order Confirmed"), and empties the cart in one transaction. The order's unique number is its database ID. The buyer then sees "Order Placed Successfully".
+- New orders appear in the buyer's My Orders, the admin Orders page, and the dashboard of each seller whose product was ordered.
+- Orders move one step at a time: Order Confirmed → On The Way → Received → Order Completed, with an optional Processing step between Order Confirmed and On The Way. Admins can update any order. A seller can update an order only when every product in it is theirs. The buyer can click **Confirm Received** on an order that is on the way, which records Received and Order Completed together.
+- Buyers can review a product once their order has been received.
+- Buyer and admin order screens poll the PostgreSQL-backed APIs every 10 seconds while open, so status updates appear without relying on browser storage or a WebSocket service.
 
-Configure the database variables in the Vercel project's Environment Variables (for the Production environment, and Preview if needed). Use `DATABASE_URL` for the hosted PostgreSQL connection, or configure `PGHOST`, `PGPORT`, `PGDATABASE`, `PGUSER`, and `PGPASSWORD`. Do not commit environment files or database credentials.
+Never put `AUTH_TOKEN_SECRET` in frontend code or commit it to Git.
 
-Deploy from this project directory with:
+## Accounts and administration
+
+Buyer and seller registration remains available from the login screen. Admin accounts must already exist in the PostgreSQL `users` table with role `admin`; public registration cannot create admin accounts. Sign in again after upgrading because sessions now use server-signed bearer tokens instead of editable browser identity headers.
+
+Administrators can manage product listings, MRP/selling price, descriptions, specifications, images, offers, availability, exact inventory, orders and order statuses, order revenue, and review moderation. Deleting a product with order history remains blocked to preserve records; disable its availability instead.
+
+## Deploying to Vercel
+
+Set the project root to this directory. Configure `DATABASE_URL` (or the PostgreSQL variables) and `AUTH_TOKEN_SECRET` as Vercel environment variables. The schema setup runs against the configured PostgreSQL database on application startup.
+
+Deploy with:
 
 ```powershell
 npx vercel --prod
 ```
 
-The database schema setup runs once per warm function instance and serializes concurrent cold-start setup through a PostgreSQL advisory lock. The health route checks database connectivity; a successful local check does not confirm the Vercel deployment or its configured database.
+## Native C++ backend
 
-The registration form sends `POST /api/register`. The backend normalizes the email, checks for duplicates, hashes the password with bcryptjs, and inserts the new user into the existing `users` table. Seller registration also requires a store name, which is saved to `sellers.store_name` and displayed in the seller dashboard after login. The login form sends `POST /api/login`, which checks the bcrypt password and selected Buyer/Seller/Admin role, then returns the account profile, including the seller store name when applicable.
-
-## Test an account
-
-1. Open the website and select `Create Account`.
-2. Enter a new full name, email, password, confirmation, and account type.
-3. Submit the form, then use the pre-filled login form.
-4. Confirm the signed-in account name and type are shown. `Logout` clears the browser session.
-
-To verify a registered account in PostgreSQL:
-
-```sql
-SELECT id, full_name, email, role, created_at
-FROM users
-WHERE LOWER(email) = LOWER('the-email-you-used@example.com');
-```
-
-The `password_hash` column should contain a bcrypt hash and is never returned by the API.
+`backend/main.cpp` is an existing Drogon migration and currently provides only a partial API. Commerce and account routes remain in the Express backend; use `npm run start:backend` for this application.
