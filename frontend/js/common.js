@@ -176,7 +176,29 @@ function renderOrderTimeline(order) {
   }).join("")}</ol>`;
 }
 
+function showToast(message, type = "info") {
+  if (!message) return;
+  let container = document.getElementById("toast-container");
+  if (!container) {
+    container = document.createElement("div");
+    container.id = "toast-container";
+    container.className = "toast-container";
+    document.body.appendChild(container);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `toast-message toast-${type}`;
+  toast.textContent = message;
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add("toast-fade-out");
+    setTimeout(() => toast.remove(), 300);
+  }, 3500);
+}
+
 function bindOrderStatusButtons(container, role, refresh) {
+  if (!container) return;
   container.querySelectorAll("[data-advance-order]").forEach((button) => {
     button.addEventListener("click", () => advanceOrderStatus(button, role, refresh));
   });
@@ -184,20 +206,25 @@ function bindOrderStatusButtons(container, role, refresh) {
 
 async function advanceOrderStatus(button, role, refresh) {
   const orderId = button.dataset.advanceOrder;
-  if (!window.confirm(`Mark order #${orderId} as ${button.dataset.nextLabel}?`)) return;
+  const nextStatus = button.dataset.nextStatus;
+  const nextLabel = button.dataset.nextLabel || nextStatus;
   button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = "Updating...";
   try {
     const response = await fetch(`${API_BASE_URL}/api/${role}/orders/${orderId}/status`, {
       method: "POST",
       headers: getAuthHeaders(),
-      body: JSON.stringify({ status: button.dataset.nextStatus })
+      body: JSON.stringify({ status: nextStatus })
     });
     const result = await readApiResponse(response);
     if (!response.ok) throw new Error(result.message || "Unable to update order status.");
+    showToast(result.message || `Order #${orderId} marked as ${nextLabel}`, "success");
     await refresh();
   } catch (error) {
-    window.alert(error.message || "Unable to update order status.");
+    showToast(error.message || "Unable to update order status.", "error");
     button.disabled = false;
+    button.textContent = originalText;
   }
 }
 

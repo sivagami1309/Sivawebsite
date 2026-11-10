@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#f5f0e8">
   <title>SIVA MART | Everyday goods, thoughtfully gathered</title>
+  <meta name="description" content="Multi-role e-commerce platform for buyers, sellers, and administrators with product discovery, cart, checkout, order tracking, and inventory management.">
+  <meta property="og:title" content="SIVA MART | Everyday goods, thoughtfully gathered">
+  <meta property="og:description" content="Multi-role e-commerce platform for buyers, sellers, and administrators with product discovery, cart, checkout, order tracking, and inventory management.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
@@ -43,8 +46,8 @@
         </div>
 
         <form id="login-form" novalidate>
-          <label for="email">Email address</label>
-          <input id="email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+          <label for="email">Email address or Mobile Number</label>
+          <input id="email" name="email" type="text" autocomplete="username" placeholder="you@example.com or 9876543210" required>
           <div class="password-label"><label for="password">Password</label><a href="#" id="forgot-link">Forgot password?</a></div>
           <div class="password-wrap">
             <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required>
@@ -55,29 +58,74 @@
           <p class="form-message" id="form-message" role="status" aria-live="polite"></p>
         </form>
 
-        <p class="account-switch">New to SIVA MART? <button type="button" id="show-signup">Create Account</button></p>
+        <p class="account-switch" id="login-switch-prompt">New to SIVA MART? <button type="button" id="show-signup">Create Account</button></p>
 
         <form id="signup-form" class="hidden-form" novalidate>
           <label for="full-name">Full Name</label>
           <input id="full-name" name="full_name" type="text" autocomplete="name" placeholder="Your full name" required>
-          <div id="store-name-field" class="hidden-form">
-            <label for="store-name">Store Name</label>
-            <input id="store-name" name="store_name" type="text" autocomplete="organization" placeholder="Your shop name">
-          </div>
+
           <label for="signup-email">Email address</label>
           <input id="signup-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
-          <label for="signup-password">Password</label>
-          <input id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Create a password" required>
-          <label for="confirm-password">Confirm Password</label>
-          <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" placeholder="Repeat your password" required>
+
+          <label for="signup-mobile">Mobile Number</label>
+          <input id="signup-mobile" name="mobile_number" type="tel" autocomplete="tel" placeholder="e.g. 9876543210" required>
+
           <label for="signup-role">Account Type</label>
           <select id="signup-role" name="role">
             <option value="buyer">Buyer</option>
             <option value="seller">Seller</option>
           </select>
+
+          <div id="store-name-field" class="hidden-form">
+            <label for="store-name">Store Name</label>
+            <input id="store-name" name="store_name" type="text" autocomplete="organization" placeholder="Your shop name">
+          </div>
+
+          <label for="signup-password">Password</label>
+          <div class="password-wrap">
+            <input id="signup-password" name="password" type="password" autocomplete="new-password" placeholder="Create a password (min 6 characters)" required>
+            <button type="button" class="password-toggle" id="signup-password-toggle" aria-label="Show password">Show</button>
+          </div>
+
+          <label for="confirm-password">Confirm Password</label>
+          <div class="password-wrap">
+            <input id="confirm-password" name="confirm_password" type="password" autocomplete="new-password" placeholder="Repeat your password" required>
+            <button type="button" class="password-toggle" id="confirm-password-toggle" aria-label="Show password">Show</button>
+          </div>
+
           <button class="submit-button" type="submit"><span>Create Account</span><span class="arrow">&#8594;</span></button>
           <p class="form-message" id="signup-message" role="status" aria-live="polite"></p>
           <p class="account-switch">Already have an account? <button type="button" id="show-login">Login</button></p>
+        </form>
+
+        <form id="forgot-form" class="hidden-form" novalidate>
+          <div class="heading-block" style="margin-bottom: 16px;">
+            <p class="eyebrow accent-text">Account Recovery</p>
+            <h2 style="font-size: 1.8rem; margin-bottom: 6px;">Reset Password</h2>
+            <p>Verify your email and registered mobile number to set a new password.</p>
+          </div>
+
+          <label for="forgot-email">Registered Email address</label>
+          <input id="forgot-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required>
+
+          <label for="forgot-mobile">Registered Mobile Number</label>
+          <input id="forgot-mobile" name="mobile_number" type="tel" autocomplete="tel" placeholder="e.g. 9876543210" required>
+
+          <label for="forgot-new-password">New Password</label>
+          <div class="password-wrap">
+            <input id="forgot-new-password" name="new_password" type="password" autocomplete="new-password" placeholder="Enter new password (min 6 characters)" required>
+            <button type="button" class="password-toggle" id="forgot-password-toggle" aria-label="Show password">Show</button>
+          </div>
+
+          <label for="forgot-confirm-password">Confirm New Password</label>
+          <div class="password-wrap">
+            <input id="forgot-confirm-password" name="confirm_password" type="password" autocomplete="new-password" placeholder="Repeat new password" required>
+            <button type="button" class="password-toggle" id="forgot-confirm-toggle" aria-label="Show password">Show</button>
+          </div>
+
+          <button class="submit-button" type="submit"><span>Reset Password</span><span class="arrow">&#8594;</span></button>
+          <p class="form-message" id="forgot-message" role="status" aria-live="polite"></p>
+          <p class="account-switch">Remember your password? <button type="button" id="show-login-from-forgot">Back to Login</button></p>
         </form>
 
         <div class="account-summary hidden-form" id="account-summary">

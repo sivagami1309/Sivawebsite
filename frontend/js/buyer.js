@@ -340,8 +340,10 @@ async function loadOrders() {
 }
 
 async function confirmOrderReceived(orderId, button) {
-  if (!window.confirm("Have you received your order?")) return;
-  button.disabled = true;
+  if (button) {
+    button.disabled = true;
+    button.textContent = "Confirming...";
+  }
   try {
     const response = await fetch(`${API_BASE_URL}/api/orders/${orderId}/received`, {
       method: "POST",
@@ -349,10 +351,14 @@ async function confirmOrderReceived(orderId, button) {
     });
     const result = await readApiResponse(response);
     if (!response.ok) throw new Error(result.message || "Unable to confirm receipt.");
+    showToast(result.message || "Order receipt confirmed!", "success");
     await loadOrders();
   } catch (error) {
-    window.alert(error.message || "Unable to confirm receipt.");
-    button.disabled = false;
+    showToast(error.message || "Unable to confirm receipt.", "error");
+    if (button) {
+      button.disabled = false;
+      button.textContent = "CONFIRM RECEIVED";
+    }
   }
 }
 
@@ -365,7 +371,7 @@ function openReviewComposer(productId) {
       : []
   );
   if (!eligible.length) {
-    alert("You can review a product after your order has been received. Each purchase can be reviewed once.");
+    showToast("You can review a product after your order has been received. Each purchase can be reviewed once.", "info");
     return;
   }
   activeProductId = productId;
@@ -395,10 +401,10 @@ async function addToCart(productId, showConfirmation = true) {
     const result = await readApiResponse(response);
     if (!response.ok) throw new Error(result.message || "Unable to add to cart.");
     await loadCart();
-    if (showConfirmation) alert(result.message || "Added to cart.");
+    if (showConfirmation) showToast(result.message || "Added to cart.", "success");
     return true;
   } catch (error) {
-    alert(error.message || "Unable to add to cart.");
+    showToast(error.message || "Unable to add to cart.", "error");
     return false;
   }
 }
@@ -414,7 +420,7 @@ async function updateCartItem(itemId, quantity) {
     if (!response.ok) throw new Error(result.message || "Unable to update cart.");
     await loadCart();
   } catch (error) {
-    alert(error.message || "Unable to update cart.");
+    showToast(error.message || "Unable to update cart.", "error");
   }
 }
 
@@ -428,7 +434,7 @@ async function removeCartItem(itemId) {
     if (!response.ok) throw new Error(result.message || "Unable to remove item.");
     await loadCart();
   } catch (error) {
-    alert(error.message || "Unable to remove item.");
+    showToast(error.message || "Unable to remove item.", "error");
   }
 }
 
@@ -442,7 +448,7 @@ async function clearCart() {
     if (!response.ok) throw new Error(result.message || "Unable to clear cart.");
     await loadCart();
   } catch (error) {
-    alert(error.message || "Unable to clear cart.");
+    showToast(error.message || "Unable to clear cart.", "error");
   }
 }
 
@@ -456,9 +462,9 @@ async function saveWishlist(productId) {
     const result = await response.json();
     if (!response.ok) throw new Error(result.message || "Unable to save wishlist");
     await loadWishlist();
-    alert(result.message || "Added to wishlist.");
+    showToast(result.message || "Added to wishlist.", "success");
   } catch (error) {
-    alert(error.message || "Unable to save wishlist.");
+    showToast(error.message || "Unable to save wishlist.", "error");
   }
 }
 
@@ -472,7 +478,7 @@ async function removeWishlist(productId) {
     if (!response.ok) throw new Error(result.message || "Unable to remove wishlist item.");
     await loadWishlist();
   } catch (error) {
-    alert(error.message || "Unable to remove wishlist item.");
+    showToast(error.message || "Unable to remove wishlist item.", "error");
   }
 }
 

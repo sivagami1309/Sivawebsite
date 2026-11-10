@@ -158,20 +158,28 @@ async function loadAdminProducts() {
       button.addEventListener("click", async () => {
         const productId = Number(button.dataset.adminDeleteProduct);
         if (!productId) return;
-        if (!window.confirm("Delete this product? Existing order history may block the action to protect marketplace records.")) {
-          return;
-        }
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = "Deleting...";
+
         try {
           const response = await fetch(`${API_BASE_URL}/api/admin/products/${productId}`, {
             method: "DELETE",
             headers: getAuthHeaders()
           });
           const result = await readApiResponse(response);
-          if (!response.ok) throw new Error(result.message || "Unable to delete product.");
-          alert(result.message || "Product deleted successfully.");
+          if (!response.ok) {
+            showToast(result.message || "Unable to delete product.", "error");
+            button.disabled = false;
+            button.textContent = originalText;
+            return;
+          }
+          showToast(result.message || "Product deleted successfully.", "success");
           await loadAdminDashboard();
         } catch (error) {
-          alert(error.message || "Unable to delete product.");
+          showToast(error.message || "Unable to delete product.", "error");
+          button.disabled = false;
+          button.textContent = originalText;
         }
       });
     });
@@ -218,7 +226,7 @@ async function editAdminProduct(productId) {
     document.querySelector("#admin-product-form").classList.remove("hidden-form");
     document.querySelector("#admin-product-form").scrollIntoView({ behavior: "smooth" });
   } catch (error) {
-    alert(error.message || "Unable to edit product.");
+    showToast(error.message || "Unable to edit product.", "error");
   }
 }
 
@@ -250,7 +258,7 @@ async function toggleAdminProduct(productId, isAvailable) {
     if (!update.ok) throw new Error(result.message || "Unable to update availability.");
     await loadAdminProducts();
   } catch (error) {
-    alert(error.message || "Unable to update product availability.");
+    showToast(error.message || "Unable to update product availability.", "error");
   }
 }
 
@@ -360,7 +368,7 @@ async function loadAdminReviews() {
           if (!result.ok) throw new Error(payload.message || "Unable to moderate review.");
           await Promise.all([loadAdminReviews(), loadAdminStats()]);
         } catch (error) {
-          alert(error.message || "Unable to moderate review.");
+          showToast(error.message || "Unable to moderate review.", "error");
         }
       });
     });

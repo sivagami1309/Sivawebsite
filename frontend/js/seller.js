@@ -32,7 +32,7 @@ async function loadSellerProducts() {
         const productId = Number(button.dataset.editProduct);
         const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, { headers: getAuthHeaders() });
         const product = await readApiResponse(response);
-        if (!response.ok) return alert(product.message || "Unable to load product.");
+        if (!response.ok) return showToast(product.message || "Unable to load product.", "error");
         sellerProductId.value = product.id;
         sellerProductName.value = product.name;
         sellerProductCategory.value = product.category_name || "";
@@ -53,15 +53,30 @@ async function loadSellerProducts() {
     document.querySelectorAll("[data-delete-product]").forEach((button) => {
       button.addEventListener("click", async () => {
         const productId = Number(button.dataset.deleteProduct);
-        if (!window.confirm("Delete this product?")) return;
+        if (!productId) return;
+        button.disabled = true;
+        const originalText = button.textContent;
+        button.textContent = "Deleting...";
 
-        const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
-          method: "DELETE",
-          headers: getAuthHeaders()
-        });
-        const result = await response.json();
-        if (!response.ok) return alert(result.message || "Unable to delete product.");
-        await loadSellerProducts();
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/products/${productId}`, {
+            method: "DELETE",
+            headers: getAuthHeaders()
+          });
+          const result = await response.json();
+          if (!response.ok) {
+            showToast(result.message || "Unable to delete product.", "error");
+            button.disabled = false;
+            button.textContent = originalText;
+            return;
+          }
+          showToast(result.message || "Product deleted successfully.", "success");
+          await loadSellerProducts();
+        } catch (error) {
+          showToast(error.message || "Unable to delete product.", "error");
+          button.disabled = false;
+          button.textContent = originalText;
+        }
       });
     });
   } catch (error) {
@@ -115,7 +130,7 @@ if (sellerForm) {
     if (!payload.name || !Number.isFinite(payload.price) || payload.price <= 0 ||
         !Number.isFinite(payload.mrp_price) || payload.mrp_price < payload.price ||
         !Number.isSafeInteger(payload.stock) || payload.stock < 0) {
-      return alert("Please provide valid product details.");
+      return showToast("Please provide valid product details.", "error");
     }
 
     const productId = sellerProductId.value;
@@ -143,9 +158,9 @@ if (sellerForm) {
       }
       resetSellerForm();
       await loadSellerProducts();
-      alert(result.message || "Product saved successfully.");
+      showToast(result.message || "Product saved successfully.", "success");
     } catch (error) {
-      alert(error.message || "Unable to save product.");
+      showToast(error.message || "Unable to save product.", "error");
     }
   });
 }

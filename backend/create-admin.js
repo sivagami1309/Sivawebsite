@@ -3,16 +3,7 @@
 const path = require("path");
 require("dotenv").config({ path: path.join(__dirname, "..", ".env") });
 const bcrypt = require("bcryptjs");
-const { Pool } = require("pg");
-
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL || undefined,
-  host: process.env.PGHOST || "localhost",
-  port: Number(process.env.PGPORT || 5432),
-  database: process.env.PGDATABASE || "siva_mart",
-  user: process.env.PGUSER,
-  password: process.env.PGPASSWORD
-});
+const { pool } = require("./database");
 
 async function createAdmin() {
   const [email, password, fullName = "Siva Mart Admin"] = process.argv.slice(2);

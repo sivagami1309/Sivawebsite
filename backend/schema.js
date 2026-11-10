@@ -11,9 +11,11 @@ async function runDatabaseSchema() {
       id SERIAL PRIMARY KEY,
       full_name VARCHAR(100) NOT NULL,
       email VARCHAR(255) NOT NULL UNIQUE,
+      mobile_number VARCHAR(20) UNIQUE,
       password_hash TEXT NOT NULL,
       role VARCHAR(20) NOT NULL DEFAULT 'buyer',
-      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
     );
   `);
 
@@ -300,6 +302,8 @@ async function runDatabaseSchema() {
     );
   }
   const addColumns = [
+    "ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS mobile_number VARCHAR(20) UNIQUE;",
+    "ALTER TABLE IF EXISTS users ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;",
     "ALTER TABLE IF EXISTS products ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;",
     "ALTER TABLE IF EXISTS order_items ADD COLUMN IF NOT EXISTS seller_id INTEGER;",
     "ALTER TABLE IF EXISTS order_items ADD COLUMN IF NOT EXISTS subtotal NUMERIC(10,2);",
@@ -320,6 +324,7 @@ async function runDatabaseSchema() {
   }
 
   await pool.query(`
+    CREATE INDEX IF NOT EXISTS idx_users_mobile_number ON users(mobile_number);
     CREATE INDEX IF NOT EXISTS idx_products_seller_id ON products(seller_id);
     CREATE INDEX IF NOT EXISTS idx_products_category_id ON products(category_id);
     CREATE INDEX IF NOT EXISTS idx_cart_items_cart_id ON cart_items(cart_id);

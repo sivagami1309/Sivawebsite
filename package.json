@@ -6,8 +6,9 @@
     "node": ">=18.11"
   },
   "scripts": {
-    "dev": "node --watch backend/server.js",
+    "dev": "node backend/server.js",
     "build": "node backend/check-code.js",
+    "lint": "node backend/check-code.js",
     "start": "node backend/server.js",
     "create-admin": "node backend/create-admin.js"
   },

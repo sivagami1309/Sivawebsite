@@ -8,7 +8,7 @@ const { pool, databaseHostName } = require("./database");
 const { getSchemaReady } = require("./schema");
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = 3000;
 
 app.use(cors());
 app.use(express.json({ limit: "20kb" }));
@@ -57,23 +57,43 @@ app.use((error, _request, response, next) => {
   });
 });
 
-async function startServer() {
-  // Open the port first so the site and /api/health respond even while the database is unavailable.
-  app.listen(PORT, (error) => {
-    if (error) {
+let server;
+
+function startServer(retries = 10, delayMs = 300) {
+  server = app.listen(PORT, "0.0.0.0", () => {
+    console.log(`SIVA_MART login server is running at http://0.0.0.0:${PORT}`);
+    console.log(`Database host: ${databaseHostName()}`);
+    getSchemaReady()
+      .then(() => console.log("Database connected and schema is ready."))
+      .catch((error) => {
+        console.error(`Database is not ready: ${error.message || error.code}. API requests return 503 and retry until it is reachable.`);
+      });
+  });
+
+  server.on("error", (error) => {
+    if (error.code === "EADDRINUSE" && retries > 0) {
+      console.warn(`Port ${PORT} in use, retrying in ${delayMs}ms (${retries} attempts left)...`);
+      setTimeout(() => {
+        try { server.close(); } catch {}
+        startServer(retries - 1, delayMs);
+      }, delayMs);
+    } else {
       console.error(`Server failed to start on port ${PORT}: ${error.message}`);
       process.exit(1);
     }
-    console.log(`SIVA_MART login server is running at http://localhost:${PORT}`);
   });
-  console.log(`Database host: ${databaseHostName()}`);
-  try {
-    await getSchemaReady();
-    console.log("Database connected and schema is ready.");
-  } catch (error) {
-    console.error(`Database is not ready: ${error.message || error.code}. API requests return 503 and retry until it is reachable.`);
+}
+
+function shutdown() {
+  if (server) {
+    server.close(() => process.exit(0));
+  } else {
+    process.exit(0);
   }
 }
+
+process.on("SIGTERM", shutdown);
+process.on("SIGINT", shutdown);
 
 if (require.main === module) {
   startServer();

@@ -1,0 +1,8 @@
+{
+  "name": "SIVA MART",
+  "description": "Multi-role e-commerce platform for buyers, sellers, and administrators with product discovery, cart, checkout, order tracking, and inventory management.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
